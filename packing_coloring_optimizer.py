@@ -1,7 +1,9 @@
 import itertools
 
 import networkx as nx
-from pulp import LpMinimize, LpProblem, LpVariable, lpSum, LpBinary, LpInteger, CPLEX_PY
+import pulp
+from PIL.ImageChops import constant
+from pulp import LpMinimize, LpProblem, LpVariable, lpSum, LpBinary, LpInteger
 
 
 def solve_packing_coloring(G):
@@ -50,9 +52,9 @@ def solve_packing_coloring(G):
             model += i * x[(v, i)] <= z, f"MaxColor_{v}_{i}"
 
     # Solve the model
-    model.solve(CPLEX_PY(msg=False))
+    model.solve(pulp.CPLEX_PY(msg=False))
 
-    if model.status == 1:  # Optimal solution found
+    if model.status == pulp.LpStatusOptimal:  # Optimal solution found
         z_val = z.varValue
 
         # Extract color assignment for each vertex.

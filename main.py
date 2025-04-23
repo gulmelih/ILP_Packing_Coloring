@@ -1,13 +1,14 @@
 import itertools
+import os
 import time
 
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from packing_coloring_solver import solve_packing_coloring
+from packing_coloring_optimizer import solve_packing_coloring
 
 
-def create_path_connected_k_complete_graphs(n, k_n) -> nx.Graph:
+def create_path_connected_k_complete_graphs(P_n, B_n, K_n) -> nx.Graph:
     """
     Creates a graph with n copies of K_{k_n} connected in a path-like fashion.
 
@@ -16,12 +17,17 @@ def create_path_connected_k_complete_graphs(n, k_n) -> nx.Graph:
     :return: A NetworkX graph representing the structure
     """
     G = nx.Graph()  # Initialize an empty graph
-    prev_last_node = None  # Track last node of the previous complete graph
     node_offset = 0  # Offset to ensure unique node labels
 
-    for _ in range(n):
+    assert B_n != 0, "B_n must not be zero"
+    assert B_n <= K_n, "B_n must be less than or equal to K_n"
+    assert P_n % B_n == 0, "P_n must be divisible by B_n"
+
+    n_of_k_complete_graphs = P_n // B_n  # Number of K_{k_n} graphs to create
+
+    for _ in range(n_of_k_complete_graphs):
         # Create a complete graph K_{k_n}
-        K = nx.complete_graph(k_n)
+        K = nx.complete_graph(K_n)
 
         # Relabel nodes uniquely
         mapping = {node: node + node_offset for node in K.nodes()}
@@ -30,13 +36,11 @@ def create_path_connected_k_complete_graphs(n, k_n) -> nx.Graph:
         # Add the current K_{k_n} to the main graph
         G.add_edges_from(K.edges())
 
-        # Connect the current K_{k_n} to the previous one with a single edge
-        if prev_last_node is not None:
-            G.add_edge(prev_last_node, node_offset)  # Connect last node of previous to first of current
+        if node_offset != 0:
+            G.add_edge(node_offset - (K_n - B_n + 1), node_offset)
 
         # Update variables for the next iteration
-        prev_last_node = node_offset + (k_n - 1)  # Last node of current K_{k_n}
-        node_offset += k_n  # Shift offset for the next K_{k_n}
+        node_offset += K_n  # Shift offset for the next K_{k_n}
 
     return G
 
@@ -61,16 +65,45 @@ def draw_colored_graph(G, color_assignment, packing_chromatic_number):
     plt.show()
 
 
+def draw_graph_without_colors(G):
+    """Draws the graph without any colors."""
+    plt.figure(figsize=(12, 8))
+    pos = nx.spring_layout(G)  # Position nodes using the spring layout
+    nx.draw(G, pos, with_labels=True, node_size=500, node_color='lightgray', edge_color='black')
+    plt.title("Graph Without Colors")
+    plt.show()
+
+
 def main():
-    for i in itertools.count(1):
+    if not os.path.exists("graphs"):
+        os.makedirs("graphs")
+
+    for P_n in itertools.count(1):
+        # for B_n in range(1, P_n + 1):
         start_time = time.time()
-        G = create_path_connected_k_complete_graphs(i, 5)
+
+        B_n = 1
+        K_n = 5
+        try:
+            G = create_path_connected_k_complete_graphs(P_n, B_n, K_n)
+        except Exception:
+            continue
+
+        nx.write_adjlist(G, f"graphs/P{P_n}_♦{B_n}_K{K_n}.txt")
+
         color_assignment, packing_chromatic_number = solve_packing_coloring(G)
-        duration = time.time() - start_time
-        print(f"for {i} many K5 graphs, Packing chromatic number: {packing_chromatic_number}"
-              f", Duration: {duration:.2f} seconds")
-        if color_assignment:
+
+        print(f"Packing Chromatic Number for P{P_n} with B{B_n} and K{K_n}: {packing_chromatic_number}"
+              f" in {time.time() - start_time:.2f} seconds")
+
+        if packing_chromatic_number > 14:
             draw_colored_graph(G, color_assignment, packing_chromatic_number)
+            draw_graph_without_colors(G)
+            exit("Packing chromatic number exceeded 14, stopping execution")
+
+
+        # if color_assignment:
+        #     draw_colored_graph(G, color_assignment, packing_chromatic_number)
 
 
 if __name__ == '__main__':
