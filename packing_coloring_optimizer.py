@@ -2,7 +2,6 @@ import itertools
 
 import networkx as nx
 import pulp
-from PIL.ImageChops import constant
 from pulp import LpMinimize, LpProblem, LpVariable, lpSum, LpBinary, LpInteger
 
 

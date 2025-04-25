@@ -10,11 +10,14 @@ from packing_coloring_optimizer import solve_packing_coloring
 
 def create_path_connected_k_complete_graphs(P_n, B_n, K_n) -> nx.Graph:
     """
-    Creates a graph with n copies of K_{k_n} connected in a path-like fashion.
-
-    :param n: Number of copies of K_{k_n}
-    :param k_n: Size of each complete graph (number of nodes in each K_{k_n})
-    :return: A NetworkX graph representing the structure
+    Creates a path-connected graph consisting of complete graphs K_{k_n}.
+    The graph is constructed such that it is path-connected.
+    Parameters:
+        P_n (int): Number of vertices of the path.
+        B_n (int): Number of vertices in the complete graph K_{k_n} that are on the path.
+        K_n (int): Number of vertices in the complete graph K_{k_n}.
+    Returns:
+        nx.Graph: A path-connected graph consisting of complete graphs K_{k_n}.
     """
     G = nx.Graph()  # Initialize an empty graph
     node_offset = 0  # Offset to ensure unique node labels
@@ -36,17 +39,20 @@ def create_path_connected_k_complete_graphs(P_n, B_n, K_n) -> nx.Graph:
         # Add the current K_{k_n} to the main graph
         G.add_edges_from(K.edges())
 
+        # Connect with the previous K_{k_n} graph
         if node_offset != 0:
             G.add_edge(node_offset - (K_n - B_n + 1), node_offset)
 
-        # Update variables for the next iteration
         node_offset += K_n  # Shift offset for the next K_{k_n}
 
     return G
 
 
-def draw_colored_graph(G, color_assignment, packing_chromatic_number):
-    """Draws the graph with nodes colored according to the packing coloring solution."""
+def draw_colored_graph(G, color_assignment, packing_chromatic_number, filename):
+    """
+    Draws the graph with nodes colored according to the packing coloring solution
+    and saves the plot to a file.
+    """
     # Create a list of colors for each node in order, starting from 1
     nodes = list(G.nodes())
     colors = [color_assignment[node] for node in nodes]
@@ -61,12 +67,13 @@ def draw_colored_graph(G, color_assignment, packing_chromatic_number):
     labels = {node: color_assignment[node] for node in nodes}
     nx.draw_networkx_labels(G, pos, labels=labels, font_color='white')
 
-    plt.title("Packing Coloring Solution")
-    plt.show()
+    plt.title(f"Packing Coloring Solution (Chromatic Number: {packing_chromatic_number})")
+    # plt.show() # Uncomment to display the plot
+    plt.savefig(filename)  # Save the plot to file
+    plt.close()
 
 
 def draw_graph_without_colors(G):
-    """Draws the graph without any colors."""
     plt.figure(figsize=(12, 8))
     pos = nx.spring_layout(G)  # Position nodes using the spring layout
     nx.draw(G, pos, with_labels=True, node_size=500, node_color='lightgray', edge_color='black')
@@ -75,35 +82,37 @@ def draw_graph_without_colors(G):
 
 
 def main():
-    if not os.path.exists("graphs"):
-        os.makedirs("graphs")
-
-    for P_n in itertools.count(1):
-        # for B_n in range(1, P_n + 1):
+    for P_n in range(1, 101):
         start_time = time.time()
 
-        B_n = 1
-        K_n = 5
+        B_n = 2  # ♦ number of vertices in K_5 that are on the path
+        K_n = 5  # complete graph K_5
+
         try:
             G = create_path_connected_k_complete_graphs(P_n, B_n, K_n)
-        except Exception:
+        except AssertionError:
             continue
-
-        nx.write_adjlist(G, f"graphs/P{P_n}_♦{B_n}_K{K_n}.txt")
 
         color_assignment, packing_chromatic_number = solve_packing_coloring(G)
 
-        print(f"Packing Chromatic Number for P{P_n} with B{B_n} and K{K_n}: {packing_chromatic_number}"
+        # Write the graph to a file
+        if not os.path.exists("graphs"):
+            os.makedirs("graphs")
+
+        nx.write_adjlist(G, f"graphs/P{P_n}_♦{B_n}_K{K_n}.txt")
+
+        # Write color assignment and packing chromatic number to file
+        with open(f"graphs/P{P_n}_♦{B_n}_K{K_n}_color_assignment.txt", "w") as f:
+            f.write(f"Packing Chromatic Number: {packing_chromatic_number}\n")
+            f.write("Color Assignment:\n")
+            for node, color in color_assignment.items():
+                f.write(f"Node {node}: Color {color}\n")
+
+        # Draw the graph with colors and write to file
+        draw_colored_graph(G, color_assignment, packing_chromatic_number, f"graphs/P{P_n}_♦{B_n}_K{K_n}_colored.png")
+
+        print(f"Packing Chromatic Number for P{P_n}_♦{B_n}_K{K_n}: {packing_chromatic_number}"
               f" in {time.time() - start_time:.2f} seconds")
-
-        if packing_chromatic_number > 14:
-            draw_colored_graph(G, color_assignment, packing_chromatic_number)
-            draw_graph_without_colors(G)
-            exit("Packing chromatic number exceeded 14, stopping execution")
-
-
-        # if color_assignment:
-        #     draw_colored_graph(G, color_assignment, packing_chromatic_number)
 
 
 if __name__ == '__main__':
