@@ -46,3 +46,5 @@ Ensure you have the following installed:
 3. **Modify parameters**:
     - Update `P_n`, `B_n`, or `K_n` values in `main.py` to customize the graph generation.
 
+## Reference
+[![DOI](https://zenodo.org/badge/968210406.svg)](https://doi.org/10.5281/zenodo.15975207)
