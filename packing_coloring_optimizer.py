@@ -18,7 +18,6 @@ def solve_packing_coloring(G):
     """
     k = G.number_of_nodes()
 
-    # Create the optimization model.
     model = LpProblem(name='PackingColoring', sense=LpMinimize)
 
     # Decision variables: x[(v, i)] equals 1 if vertex v is assigned color i, 0 otherwise.
@@ -50,13 +49,11 @@ def solve_packing_coloring(G):
         for i in range(1, k + 1):
             model += i * x[(v, i)] <= z, f"MaxColor_{v}_{i}"
 
-    # Solve the model
     model.solve(pulp.CPLEX_PY(msg=False))
 
-    if model.status == pulp.LpStatusOptimal:  # Optimal solution found
+    if model.status == pulp.LpStatusOptimal:
         z_val = z.varValue
 
-        # Extract color assignment for each vertex.
         color_assignment = {}
         for v in G.nodes:
             for i in range(1, k + 1):

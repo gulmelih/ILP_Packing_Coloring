@@ -1,18 +1,16 @@
 # Integer Linear Programming Implementation for Packing and Coloring in Graphs
+
 [![DOI](https://zenodo.org/badge/968210406.svg)](https://doi.org/10.5281/zenodo.15975207)
 
 This code uses the formulation from Shao & Vesel’s 2015 work, *Modeling the packing coloring problem of graphs*[^1].
 
 ## Setup Instructions
 
-Follow these steps to set up the project on your local machine:
-
 ### Prerequisites
 
 Ensure you have the following installed:
 
-- Python 3.10 or higher
-- `pip` (Python package manager)
+- Python 3.9 or higher
 
 ### Installation
 
@@ -28,9 +26,10 @@ Ensure you have the following installed:
    pip install -r requirements.txt
    ```
 
-### Notes
+### CPLEX Installation
 
-- Ensure `CPLEX` is installed and configured. [Setting up the CPLEX Python API](https://www.ibm.com/docs/en/icos/22.1.2?topic=cplex-setting-up-python-api)
+- Ensure `CPLEX` is installed and
+  configured. [Setting up the CPLEX Python API](https://www.ibm.com/docs/en/icos/22.1.2?topic=cplex-setting-up-python-api)
 
 ### Usage
 
@@ -47,4 +46,5 @@ Ensure you have the following installed:
 
 ## References
 
-[^1]: Z. Shao and A. Vesel, “Modeling the packing coloring problem of graphs,” *Applied Mathematical Modelling*, vol. 39, no. 13, pp. 3588–3595, 2015. DOI: [10.1016/j.apm.2014.11.060](https://doi.org/10.1016/j.apm.2014.11.060).
+[^1]: Z. Shao and A. Vesel, “Modeling the packing coloring problem of graphs,” *Applied Mathematical Modelling*, vol.
+39, no. 13, pp. 3588–3595, 2015. DOI: [10.1016/j.apm.2014.11.060](https://doi.org/10.1016/j.apm.2014.11.060).
